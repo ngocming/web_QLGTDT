@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <title>Đăng nhập • User Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="app.js"></script>
+  </head>
+  <body class="page-login">
+    <main class="auth">
+      <section class="auth__card" aria-label="Đăng nhập hệ thống">
+        <div class="auth__header">
+          <div class="auth__badge">UserDash</div>
+          <h1 class="auth__title">Đăng nhập</h1>
+          <p class="muted">Hệ thống quản lý người dùng (HTML/CSS/JS)</p>
+        </div>
+
+        <form id="loginForm" class="form">
+          <label class="field">
+            <span class="field__label">Tên đăng nhập</span>
+            <input id="loginUsername" name="username" type="text" autocomplete="username" required />
+          </label>
+
+          <label class="field">
+            <span class="field__label">Mật khẩu</span>
+            <input
+              id="loginPassword"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              required
+            />
+          </label>
+
+          <button class="btn btn--primary w-100" type="submit">Vào dashboard</button>
+        </form>
+
+        <p class="muted small">
+          Tài khoản mẫu: <code>admin</code> / <code>admin123</code>
+        </p>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  </body>
+</html>
+
