@@ -4,20 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light" />
-    <title>Dashboard • Quan ly he thong</title>
+    <title>Dashboard • Quản lý hệ thống</title>
     <link rel="stylesheet" href="styles.css" />
     <script defer src="app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body class="page-dashboard">
     <div class="app-shell">
-      <aside id="sidebar" class="sidebar" aria-label="Thanh dieu huong">
+      <aside id="sidebar" class="sidebar" aria-label="Thanh điều hướng">
         <div class="sidebar__brand">
           <a class="brand" href="dashboard.html" aria-label="Trang dashboard">CityVision</a>
           <button
             class="icon-btn sidebar__toggle"
             type="button"
             data-action="toggleSidebar"
-            aria-label="Thu gon menu"
+            aria-label="Thu gọn menu"
           >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path
@@ -33,22 +34,25 @@
 
         <nav class="sidebar__nav">
           <button class="nav-item is-active" type="button" data-action="switchModule" data-module="users">
-            Nguoi dung
+            Người dùng
           </button>
           <button class="nav-item" type="button" data-action="switchModule" data-module="cameras">
-            Quan ly camera
+            Quản lý camera
           </button>
           <button class="nav-item" type="button" data-action="switchModule" data-module="monitoring">
-            Live monitoring
+            Giám sát trực tiếp
           </button>
           <button class="nav-item" type="button" data-action="switchModule" data-module="videos">
-            Video phat
+            Video vi phạm
+          </button>
+          <button class="nav-item" type="button" data-action="switchModule" data-module="settings">
+            Cấu hình hệ thống
           </button>
         </nav>
 
         <div class="sidebar__footer">
-          <div id="sessionChip" class="user-chip" aria-label="Phien dang nhap"></div>
-          <button class="btn btn--ghost w-100" type="button" data-action="logout">Dang xuat</button>
+          <div id="sessionChip" class="user-chip" aria-label="Phiên đăng nhập"></div>
+          <button class="btn btn--ghost w-100" type="button" data-action="logout">Đăng xuất</button>
         </div>
       </aside>
 
@@ -58,7 +62,7 @@
             class="icon-btn topbar__menu"
             type="button"
             data-action="toggleSidebar"
-            aria-label="Mo menu"
+            aria-label="Mở menu"
           >
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path
@@ -72,28 +76,28 @@
           </button>
 
           <div class="topbar__title">
-            <h1 id="moduleTitle">Quan ly nguoi dung</h1>
-            <p id="moduleSubtitle" class="muted">Them, sua, xoa va theo doi trang thai tai khoan</p>
+            <h1 id="moduleTitle">Quản lý người dùng</h1>
+            <p id="moduleSubtitle" class="muted">Thêm, sửa, xóa và theo dõi trạng thái tài khoản</p>
           </div>
 
           <div class="topbar__actions">
             <button id="topbarPrimaryAction" class="btn btn--primary" type="button" data-action="contextPrimary">
-              + Them nguoi dung
+              + Thêm người dùng
             </button>
           </div>
         </header>
 
         <section class="module is-active" data-module-panel="users">
-          <section class="cards" aria-label="Thong ke nguoi dung">
+          <section class="cards" aria-label="Thống kê người dùng">
             <article class="card card--stat">
               <div class="stat">
-                <div class="stat__label">Tong nguoi dung</div>
+                <div class="stat__label">Tổng người dùng</div>
                 <div id="statTotal" class="stat__value">0</div>
               </div>
             </article>
             <article class="card card--stat">
               <div class="stat">
-                <div class="stat__label">Dang hoat dong</div>
+                <div class="stat__label">Đang hoạt động</div>
                 <div id="statActive" class="stat__value">0</div>
               </div>
             </article>
@@ -104,12 +108,20 @@
               </div>
             </article>
           </section>
-
-          <section class="panel" aria-label="Danh sach nguoi dung">
+          <article class="panel" style="margin-top: 24px; margin-bottom: 24px;">
             <div class="panel__header">
-              <h2 class="panel__title">Danh sach nguoi dung</h2>
+              <h2 class="panel__title">Thống kê vi phạm theo tuần</h2>
+            </div>
+            <div class="panel__body" style="height: 300px;">
+              <canvas id="violationChart"></canvas>
+            </div>
+          </article>
+
+          <section class="panel" aria-label="Danh sách người dùng">
+            <div class="panel__header">
+              <h2 class="panel__title">Danh sách người dùng</h2>
               <div class="filters">
-                <label class="search search--compact" aria-label="Tim kiem">
+                <label class="search search--compact" aria-label="Tìm kiếm">
                   <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path
                       d="M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Zm10 2-6-6"
@@ -119,33 +131,33 @@
                       stroke-linecap="round"
                     />
                   </svg>
-                  <input id="searchInput" type="search" placeholder="Tim theo username, ho ten, email..." />
+                  <input id="searchInput" type="search" placeholder="Tìm theo username, họ tên, email..." />
                 </label>
                 <label class="select">
-                  <span class="sr-only">Loc theo quyen</span>
+                  <span class="sr-only">Lọc theo quyền</span>
                   <select id="filterRole">
-                    <option value="">Tat ca quyen</option>
+                    <option value="">Tất cả quyền</option>
                     <option value="Admin">Admin</option>
-                    <option value="Nhan vien">Nhan vien</option>
+                    <option value="Nhan vien">Nhân viên</option>
                   </select>
                 </label>
                 <label class="select">
-                  <span class="sr-only">Loc theo trang thai</span>
+                  <span class="sr-only">Lọc theo trạng thái</span>
                   <select id="filterStatus">
-                    <option value="">Tat ca trang thai</option>
-                    <option value="Hoat dong">Hoat dong</option>
-                    <option value="Tam khoa">Tam khoa</option>
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="Hoat dong">Hoạt động</option>
+                    <option value="Tam khoa">Tạm khóa</option>
                   </select>
                 </label>
                 <label class="select">
-                  <span class="sr-only">Sap xep</span>
+                  <span class="sr-only">Sắp xếp</span>
                   <select id="sortBy">
-                    <option value="createdAt_desc">Moi nhat</option>
-                    <option value="createdAt_asc">Cu nhat</option>
+                    <option value="createdAt_desc">Mới nhất</option>
+                    <option value="createdAt_asc">Cũ nhất</option>
                     <option value="username_asc">Username A-Z</option>
                     <option value="username_desc">Username Z-A</option>
-                    <option value="fullName_asc">Ho ten A-Z</option>
-                    <option value="fullName_desc">Ho ten Z-A</option>
+                    <option value="fullName_asc">Họ tên A-Z</option>
+                    <option value="fullName_desc">Họ tên Z-A</option>
                   </select>
                 </label>
               </div>
@@ -156,12 +168,12 @@
                 <thead>
                   <tr>
                     <th>Username</th>
-                    <th>Ho ten</th>
+                    <th>Họ tên</th>
                     <th>Email</th>
-                    <th>Quyen</th>
-                    <th>Trang thai</th>
-                    <th>Ngay tao</th>
-                    <th class="th-actions">Thao tac</th>
+                    <th>Quyền</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày tạo</th>
+                    <th class="th-actions">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody id="usersTbody"></tbody>
@@ -169,42 +181,43 @@
             </div>
 
             <div class="panel__footer">
-              <div id="tableSummary" class="muted">0 ket qua</div>
+              <div id="tableSummary" class="muted">0 kết quả</div>
               <div class="pagination">
-                <button class="btn btn--ghost" type="button" data-action="prevPage">Truoc</button>
+                <button class="btn btn--ghost" type="button" data-action="prevPage">Trước</button>
                 <span id="pageInfo" class="muted">Trang 1/1</span>
                 <button class="btn btn--ghost" type="button" data-action="nextPage">Sau</button>
               </div>
             </div>
           </section>
         </section>
-
+        
+        
         <section class="module" data-module-panel="cameras" hidden>
-          <section class="cards" aria-label="Thong ke camera">
+          <section class="cards" aria-label="Thống kê camera">
             <article class="card card--stat">
               <div class="stat">
-                <div class="stat__label">Tong camera</div>
+                <div class="stat__label">Tổng camera</div>
                 <div id="cameraStatTotal" class="stat__value">0</div>
               </div>
             </article>
             <article class="card card--stat">
               <div class="stat">
-                <div class="stat__label">Dang hoat dong</div>
+                <div class="stat__label">Đang hoạt động</div>
                 <div id="cameraStatActive" class="stat__value">0</div>
               </div>
             </article>
             <article class="card card--stat">
               <div class="stat">
-                <div class="stat__label">Da gan thiet bi</div>
+                <div class="stat__label">Đã gắn thiết bị</div>
                 <div id="cameraStatBound" class="stat__value">0</div>
               </div>
             </article>
           </section>
 
-          <section class="panel" aria-label="Danh sach camera">
+          <section class="panel" aria-label="Danh sách camera">
             <div class="panel__header">
-              <h2 class="panel__title">Quan ly camera</h2>
-              <button class="btn btn--primary" type="button" data-action="openCameraCreate">+ Them camera</button>
+              <h2 class="panel__title">Quản lý camera</h2>
+              <button class="btn btn--primary" type="button" data-action="openCameraCreate">+ Thêm camera</button>
             </div>
 
             <div id="cameraList" class="entity-grid"></div>
@@ -212,74 +225,90 @@
         </section>
 
         <section class="module" data-module-panel="monitoring" hidden>
-          <section class="monitoring-layout">
-            <article class="panel">
-              <div class="panel__header">
-                <h2 class="panel__title">Live monitoring</h2>
-              </div>
-
-              <div class="panel__body monitoring-panel">
-                <div class="form-grid">
-                  <label class="field">
-                    <span class="field__label">Camera da quan ly</span>
-                    <select id="monitorCameraSelect"></select>
-                  </label>
-
-                  <label class="field">
-                    <span class="field__label">Thiet bi camera tren may</span>
-                    <select id="deviceSelect"></select>
-                  </label>
+          <div class="monitoring-container">
+            <div class="monitoring-video-section">
+              <article class="panel">
+                <div class="panel__header">
+                  <h2 class="panel__title">Camera Giám Sát Trực Tiếp</h2>
                 </div>
-
-                <div class="monitoring-actions">
-                  <button class="btn btn--primary" type="button" data-action="startMonitoring">Bat dau xem</button>
-                  <button class="btn btn--ghost" type="button" data-action="stopMonitoring">Dung xem</button>
-                  <button class="btn btn--ghost" type="button" data-action="refreshDevices">Tai lai danh sach camera</button>
+                <div class="panel__body">
+                  <div class="monitoring-stage" style="position: relative; background: #000; border-radius: 8px; overflow: hidden;">
+                    <video id="liveVideo" class="live-video" autoplay muted playsinline style="width: 100%; display: block;"></video>
+                    <canvas id="detectionCanvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+                  </div>
+                  <div class="monitoring-actions" style="margin-top: 15px; display: flex; gap: 10px;">
+                    <button class="btn btn--primary" type="button" data-action="startMonitoring">Bắt đầu xem</button>
+                    <button class="btn btn--ghost" type="button" data-action="stopMonitoring">Dừng xem</button>
+                  </div>
                 </div>
+              </article>
+            </div>
 
-                <label class="toggle-card">
-                  <input id="liveAiEnabled" type="checkbox" />
-                  <span>
-                    <strong>Bat AI phat hien do xe sai quy dinh</strong>
-                    <small class="muted">Can chay backend `tttn_no_park_zone` de xu ly khung hinh live.</small>
-                  </span>
+            <div class="monitoring-log-section">
+              <article class="panel">
+                <div class="panel__header">
+                  <h2 class="panel__title">Kết Quả Nhận Diện</h2>
+                </div>
+                <div class="panel__body scrollable-log" style="max-height: 450px; overflow-y: auto;">
+                  <table class="table table--compact">
+                    <thead>
+                      <tr>
+                        <th>Thời gian</th>
+                        <th>Biển số</th>
+                        <th>Trạng thái</th>
+                      </tr>
+                    </thead>
+                    <tbody id="alprResultsTbody">
+                      <tr><td colspan="3" style="text-align: center; color: #94a3b8; padding: 20px;">Đang chờ dữ liệu từ AI...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+        <section class="module" data-module-panel="settings" hidden>
+          <div class="panel">
+            <div class="panel__header">
+              <h2 class="panel__title">Cài đặt vận hành hệ thống</h2>
+            </div>
+            <div class="panel__body form">
+              <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <label class="field">
+                  <span class="field__label">Độ tin cậy AI tối thiểu (%)</span>
+                  <input type="number" id="confThreshold" value="75" min="1" max="100">
+                </label>
+                
+                <label class="field">
+                  <span class="field__label">Tên trạm kiểm soát</span>
+                  <input type="text" id="stationName" value="Trạm Cổng Chính - CityVision">
                 </label>
 
-                <div class="monitoring-stage">
-                  <video id="liveVideo" class="live-video" autoplay muted playsinline></video>
-                </div>
-
-                <p id="monitoringStatus" class="muted">Chua ket noi camera.</p>
-                <div id="liveAiSummary" class="info-strip">AI chua duoc bat.</div>
-                <img id="liveAiPreview" class="processed-preview" alt="Khung hinh da phat hien vi pham" hidden />
+                <label class="field" style="grid-column: span 2; display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                  <input type="checkbox" id="enableSound" checked style="width: 18px; height: 18px;">
+                  <span class="field__label" style="margin: 0;">Kích hoạt âm thanh khi có xe vi phạm</span>
+                </label>
               </div>
-            </article>
-
-            <article class="panel">
-              <div class="panel__header">
-                <h2 class="panel__title">Huong dan nhanh</h2>
+              
+              <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee; display: flex; gap: 10px;">
+                <button class="btn btn--primary" type="button" onclick="saveSettings()">Lưu cài đặt</button>
+                <button class="btn btn--ghost" type="button" onclick="resetSettings()">Mặc định</button>
               </div>
-              <div class="panel__body helper-list">
-                <p>1. Them camera trong muc Quan ly camera.</p>
-                <p>2. Cho phep trinh duyet truy cap camera.</p>
-                <p>3. Chon camera da quan ly hoac chon truc tiep thiet bi webcam.</p>
-                <p>4. Bam Bat dau xem de mo live monitoring.</p>
-              </div>
-            </article>
-          </section>
+            </div>
+          </div>
         </section>
 
         <section class="module" data-module-panel="videos" hidden>
-          <section class="panel" aria-label="Upload video phat">
+          <section class="panel" aria-label="Tải video vi phạm lên">
             <div class="panel__header">
-              <h2 class="panel__title">Upload video phat</h2>
+              <h2 class="panel__title">Tải video vi phạm lên</h2>
             </div>
 
             <form id="videoUploadForm" class="panel__body form">
               <div class="form-grid">
                 <label class="field">
-                  <span class="field__label">Tieu de</span>
-                  <input id="videoTitle" name="videoTitle" type="text" placeholder="Vi du: Vuot den do giao lo A" required />
+                  <span class="field__label">Tiêu đề</span>
+                  <input id="videoTitle" name="videoTitle" type="text" placeholder="Ví dụ: Vượt đèn đỏ giao lộ A" required />
                 </label>
 
                 <label class="field">
@@ -288,38 +317,75 @@
                 </label>
 
                 <label class="field">
-                  <span class="field__label">Thoi diem vi pham</span>
+                  <span class="field__label">Thời điểm vi phạm</span>
                   <input id="videoOccurredAt" name="videoOccurredAt" type="datetime-local" />
                 </label>
 
                 <label class="field">
-                  <span class="field__label">Tep video</span>
+                  <span class="field__label">Tệp video</span>
                   <input id="videoFile" name="videoFile" type="file" accept="video/*" required />
                 </label>
               </div>
 
               <label class="field">
-                <span class="field__label">Mo ta</span>
-                <textarea id="videoDescription" name="videoDescription" rows="3" placeholder="Ghi chu, bien so, loai vi pham..."></textarea>
+                <span class="field__label">Mô tả</span>
+                <textarea id="videoDescription" name="videoDescription" rows="3" placeholder="Ghi chú, biển số, loại vi phạm..."></textarea>
               </label>
 
               <label class="toggle-card">
                 <input id="videoAiEnabled" type="checkbox" checked />
                 <span>
-                  <strong>Phan tich do xe sai quy dinh khi upload</strong>
-                  <small class="muted">Video se duoc gui sang backend AI, sau do tra ve video da danh dau vi pham.</small>
+                  <strong>Phân tích đỗ xe sai quy định khi tải lên</strong>
+                  <small class="muted">Video sẽ được gửi sang backend AI, sau đó trả về video đã đánh dấu vi phạm.</small>
                 </span>
               </label>
 
               <div class="form-actions">
-                <button class="btn btn--primary" type="submit">Tai video len</button>
+                <button class="btn btn--primary" type="submit">Tải video lên</button>
               </div>
             </form>
           </section>
+          <section class="module" data-module-panel="videos" hidden>
+          <div class="panel">
+            <div class="panel__header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px;">
+              <h2 class="panel__title">Nhật ký vi phạm hệ thống</h2>
+              <div class="filter-group" style="display: flex; gap: 10px;">
+                <input type="date" id="violationDateFilter" class="btn btn--ghost" style="padding: 5px 10px;">
+                <button class="btn btn--primary" type="button" onclick="exportViolationExcel()">Xuất báo cáo</button>
+              </div>
+            </div>
+            
+            <div class="table-wrap">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Ảnh bằng chứng</th>
+                    <th>Biển số</th>
+                    <th>Loại vi phạm</th>
+                    <th>Thời gian</th>
+                    <th>Vị trí</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="violationTbody">
+                   </tbody>
+              </table>
+            </div>
+          </div>
 
-          <section class="panel" aria-label="Danh sach video phat">
+          <div class="panel" style="margin-top: 24px;">
             <div class="panel__header">
-              <h2 class="panel__title">Thu vien video phat</h2>
+              <h2 class="panel__title">Tải video vi phạm lên</h2>
+            </div>
+            <div class="panel__body">
+               <p class="muted">Chức năng upload video đang được bảo trì.</p>
+            </div>
+          </div>
+        </section>
+
+          <section class="panel" aria-label="Danh sách video vi phạm">
+            <div class="panel__header">
+              <h2 class="panel__title">Thư viện video vi phạm</h2>
               <div id="videoSummary" class="muted">0 video</div>
             </div>
 
@@ -333,8 +399,8 @@
       <div class="modal__backdrop" data-action="closeModal" aria-hidden="true"></div>
       <div class="modal__dialog" role="document">
         <div class="modal__header">
-          <h3 id="modalTitle" class="modal__title">Them nguoi dung</h3>
-          <button class="icon-btn" type="button" data-action="closeModal" aria-label="Dong">
+          <h3 id="modalTitle" class="modal__title">Thêm người dùng</h3>
+          <button class="icon-btn" type="button" data-action="closeModal" aria-label="Đóng">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path
                 d="M6 6l12 12M18 6 6 18"
@@ -357,7 +423,7 @@
             </label>
 
             <label class="field">
-              <span class="field__label">Ho ten</span>
+              <span class="field__label">Họ tên</span>
               <input id="fullName" name="fullName" type="text" autocomplete="name" />
             </label>
 
@@ -367,35 +433,35 @@
             </label>
 
             <label class="field">
-              <span class="field__label">Quyen</span>
+              <span class="field__label">Quyền</span>
               <select id="role" name="role" required>
                 <option value="Admin">Admin</option>
-                <option value="Nhan vien">Nhan vien</option>
+                <option value="Nhan vien">Nhân viên</option>
               </select>
             </label>
 
             <label class="field">
-              <span class="field__label">Trang thai</span>
+              <span class="field__label">Trạng thái</span>
               <select id="status" name="status" required>
-                <option value="Hoat dong">Hoat dong</option>
-                <option value="Tam khoa">Tam khoa</option>
+                <option value="Hoat dong">Hoạt động</option>
+                <option value="Tam khoa">Tạm khóa</option>
               </select>
             </label>
 
             <label class="field">
-              <span class="field__label">Mat khau</span>
+              <span class="field__label">Mật khẩu</span>
               <input id="password" name="password" type="password" autocomplete="new-password" />
             </label>
           </div>
 
           <p id="passwordHint" class="muted small">
-            Khi sua nguoi dung: de trong mat khau neu khong muon doi.
+            Khi sửa người dùng: để trống mật khẩu nếu không muốn đổi.
           </p>
         </form>
 
         <div class="modal__footer">
-          <button class="btn btn--ghost" type="button" data-action="closeModal">Huy</button>
-          <button class="btn btn--primary" type="submit" form="userForm">Luu</button>
+          <button class="btn btn--ghost" type="button" data-action="closeModal">Hủy</button>
+          <button class="btn btn--primary" type="submit" form="userForm">Lưu</button>
         </div>
       </div>
     </div>
@@ -404,8 +470,8 @@
       <div class="modal__backdrop" data-action="closeCameraModal" aria-hidden="true"></div>
       <div class="modal__dialog" role="document">
         <div class="modal__header">
-          <h3 id="cameraModalTitle" class="modal__title">Them camera</h3>
-          <button class="icon-btn" type="button" data-action="closeCameraModal" aria-label="Dong">
+          <h3 id="cameraModalTitle" class="modal__title">Thêm camera</h3>
+          <button class="icon-btn" type="button" data-action="closeCameraModal" aria-label="Đóng">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path
                 d="M6 6l12 12M18 6 6 18"
@@ -423,39 +489,39 @@
 
           <div class="form-grid">
             <label class="field">
-              <span class="field__label">Ten camera</span>
+              <span class="field__label">Tên camera</span>
               <input id="cameraName" name="cameraName" type="text" required />
             </label>
 
             <label class="field">
-              <span class="field__label">Vi tri</span>
-              <input id="cameraLocation" name="cameraLocation" type="text" placeholder="Cong 1, Nga tu A..." />
+              <span class="field__label">Vị trí</span>
+              <input id="cameraLocation" name="cameraLocation" type="text" placeholder="Cổng 1, Ngã tư A..." />
             </label>
 
             <label class="field">
-              <span class="field__label">Trang thai</span>
+              <span class="field__label">Trạng thái</span>
               <select id="cameraStatus" name="cameraStatus" required>
-                <option value="Hoat dong">Hoat dong</option>
-                <option value="Bao tri">Bao tri</option>
-                <option value="Tam dung">Tam dung</option>
+                <option value="Hoat dong">Hoạt động</option>
+                <option value="Bao tri">Bảo trì</option>
+                <option value="Tam dung">Tạm dừng</option>
               </select>
             </label>
 
             <label class="field">
-              <span class="field__label">Gan voi webcam</span>
+              <span class="field__label">Gắn với webcam</span>
               <select id="cameraDeviceId" name="cameraDeviceId"></select>
             </label>
           </div>
 
           <label class="field">
-            <span class="field__label">Mo ta</span>
-            <textarea id="cameraNotes" name="cameraNotes" rows="3" placeholder="Ghi chu them cho camera"></textarea>
+            <span class="field__label">Mô tả</span>
+            <textarea id="cameraNotes" name="cameraNotes" rows="3" placeholder="Ghi chú thêm cho camera"></textarea>
           </label>
         </form>
 
         <div class="modal__footer">
-          <button class="btn btn--ghost" type="button" data-action="closeCameraModal">Huy</button>
-          <button class="btn btn--primary" type="submit" form="cameraForm">Luu camera</button>
+          <button class="btn btn--ghost" type="button" data-action="closeCameraModal">Hủy</button>
+          <button class="btn btn--primary" type="submit" form="cameraForm">Lưu camera</button>
         </div>
       </div>
     </div>

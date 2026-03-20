@@ -25,27 +25,27 @@
 
   const MODULE_META = {
     users: {
-      title: "Quan ly nguoi dung",
-      subtitle: "Them, sua, xoa va theo doi trang thai tai khoan",
-      actionLabel: "+ Them nguoi dung",
+      title: "Quản lý người dùng",
+      subtitle: "Thêm, sửa, xóa và theo dõi trạng thái tài khoản",
+      actionLabel: "+ Thêm người dùng",
       action: "openCreate",
     },
     cameras: {
-      title: "Quan ly camera",
-      subtitle: "Luu danh sach camera, vi tri va thiet bi duoc lien ket",
-      actionLabel: "+ Them camera",
+      title: "Quản lý camera",
+      subtitle: "Lưu danh sách camera, vị trí và thiết bị được liên kết",
+      actionLabel: "+ Thêm camera",
       action: "openCameraCreate",
     },
     monitoring: {
       title: "Live monitoring",
-      subtitle: "Xem camera truc tiep tu webcam duoc cap quyen trong trinh duyet",
-      actionLabel: "Tai lai camera",
+      subtitle: "Xem camera trực tiếp từ webcam được cấp quyền trong trình duyệt",
+      actionLabel: "Tải lại camera",
       action: "refreshDevices",
     },
     videos: {
-      title: "Video phat",
-      subtitle: "Tai len, xem lai va quan ly video vi pham",
-      actionLabel: "Tai len video",
+      title: "Video phát",
+      subtitle: "Tải lên, xem lại và quản lý video vi phạm",
+      actionLabel: "Tải lên video",
       action: "focusVideoUpload",
     },
   };
@@ -191,7 +191,7 @@
         id: uid(),
         username: "admin",
         password: "admin123",
-        fullName: "Quan tri vien",
+        fullName: "Quản trị viên",
         email: "admin@example.com",
         role: ROLE_ADMIN,
         status: STATUS_ACTIVE,
@@ -220,11 +220,11 @@
     const seeded = [
       {
         id: uid(),
-        name: "Camera cong chinh",
-        location: "Cong so 1",
+        name: "Camera cổng chính",
+        location: "Cổng số 1",
         status: CAMERA_STATUS_ACTIVE,
         deviceId: "",
-        notes: "Camera theo doi luong xe ra vao",
+        notes: "Camera theo dõi lượng xe ra vào",
         createdAt: safeNowIso(),
       },
     ];
@@ -1513,4 +1513,176 @@
   } else {
     init();
   }
+  window.addAlprResult = function(plate, status) {
+      const tbody = document.getElementById("alprResultsTbody");
+      if (!tbody) return;
+
+      // Xóa dòng thông báo trống nếu có
+      if (tbody.querySelector("td[colspan]")) {
+          tbody.innerHTML = "";
+      }
+
+      const now = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const statusClass = status === "Vi phạm" ? "pill--danger" : "pill--success";
+      
+      // Tạo dòng mới
+      const row = document.createElement("tr");
+      row.className = "row-new-detection";
+      row.innerHTML = `
+          <td style="color: #64748b;">${now}</td>
+          <td><strong style="font-family: monospace; font-size: 1.1rem; letter-spacing: 1px;">${plate}</strong></td>
+          <td><span class="pill ${statusClass}" style="padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">${status}</span></td>
+      `;
+
+      // Chèn lên đầu bảng
+      tbody.prepend(row);
+
+      // Giới hạn 10 dòng gần nhất
+      if (tbody.children.length > 10) {
+          tbody.removeChild(tbody.lastChild);
+      }
+  };
+  
+  window.initViolationChart = function() {
+      const ctx = document.getElementById('violationChart');
+      if (!ctx) return;
+
+      // Xóa biểu đồ cũ nếu có để tránh lỗi render đè
+      if (window.myViolationChart) {
+          window.myViolationChart.destroy();
+      }
+
+      window.myViolationChart = new Chart(ctx, {
+          type: 'bar', // Loại biểu đồ cột
+          data: {
+              labels: ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'CN'],
+              datasets: [{
+                  label: 'Số ca vi phạm',
+                  data: [12, 19, 3, 5, 2, 15, 8], // Dữ liệu mẫu, mày có thể đổi số cho đẹp
+                  backgroundColor: 'rgba(59, 130, 246, 0.6)', // Màu xanh dương
+                  borderColor: 'rgb(59, 130, 246)',
+                  borderWidth: 1,
+                  borderRadius: 5
+              }]
+          },
+          options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                  y: { beginAtZero: true }
+              },
+              plugins: {
+                  legend: { display: false } // Ẩn chú thích cho gọn
+              }
+          }
+      });
+  };
+
+  // Tự động vẽ biểu đồ khi vừa load trang
+  setTimeout(window.initViolationChart, 500);
+
+  // Vẽ lại biểu đồ khi quay lại tab "Người dùng" (Trang chủ)
+  document.querySelector('[data-module="users"]').addEventListener('click', () => {
+      setTimeout(window.initViolationChart, 200);
+  });
+  /* ==========================================================================
+   CHỨC NĂNG 2: NHẬT KÝ VI PHẠM (VIOLATION LOG)
+   ========================================================================== */
+
+// 1. Dữ liệu mẫu để mày show cho thầy cô (Có thể thay ảnh thật sau)
+const dataViPham = [
+    { id: 1, plate: "30F-123.45", type: "Đỗ xe sai quy định", time: "2026-03-20 08:30:12", location: "Cổng số 1", img: "https://via.placeholder.com/120x70?text=Xe+Vi+Pham+1" },
+    { id: 2, plate: "29A-888.88", type: "Vượt đèn đỏ", time: "2026-03-20 09:15:45", location: "Ngã tư A", img: "https://via.placeholder.com/120x70?text=Xe+Vi+Pham+2" },
+    { id: 3, plate: "15B-555.55", type: "Đỗ xe sai quy định", time: "2026-03-20 10:05:20", location: "Khu vực B", img: "https://via.placeholder.com/120x70?text=Xe+Vi+Pham+3" }
+];
+
+// 2. Hàm đổ dữ liệu vào bảng Violation
+window.renderViolationLog = function() {
+    const tbody = document.getElementById("violationTbody");
+    if (!tbody) return;
+
+    console.log("Đang tải nhật ký vi phạm...");
+    
+    tbody.innerHTML = dataViPham.map(v => `
+        <tr>
+            <td><img src="${v.img}" style="width:100px; border-radius:4px; border:1px solid #ddd;" alt="Bằng chứng"></td>
+            <td><strong style="font-size: 1rem; color: #1e293b;">${v.plate}</strong></td>
+            <td><span style="background: #fee2e2; color: #dc2626; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">${v.type}</span></td>
+            <td style="color: #64748b;">${v.time}</td>
+            <td>${v.location}</td>
+            <td>
+                <button class="btn btn--ghost small" onclick="window.viewViolationDetail(${v.id})">Chi tiết</button>
+            </td>
+        </tr>
+    `).join('');
+};
+
+
+  window.viewViolationDetail = function(id) {
+      alert("Đang trích xuất hình ảnh bằng chứng cho vụ việc ID: " + id);
+  };
+
+  window.exportViolationExcel = function() {
+      alert("Hệ thống đang tạo báo cáo Excel cho danh sách vi phạm này...");
+  };
+
+  // 4. QUAN TRỌNG: Lắng nghe sự kiện click menu "Video vi phạm"
+  document.addEventListener('click', (e) => {
+      // Tìm cái nút nào có data-module="videos"
+      const btn = e.target.closest('[data-module="videos"]');
+      if (btn) {
+          // Đợi module hiện ra (150ms) rồi mới đổ dữ liệu vào bảng
+          setTimeout(window.renderViolationLog, 150);
+      }
+  });
+  /* ==========================================================================
+   CHỨC NĂNG 6: CẤU HÌNH HỆ THỐNG (SYSTEM SETTINGS)
+   ========================================================================== */
+
+  window.saveSettings = function() {
+      const settings = {
+          threshold: document.getElementById('confThreshold').value,
+          station: document.getElementById('stationName').value,
+          sound: document.getElementById('enableSound').checked
+      };
+      
+      // Lưu vào bộ nhớ trình duyệt
+      localStorage.setItem('cityvision_settings', JSON.stringify(settings));
+      
+      // Hiển thị thông báo Toast (nếu bài của mày có hàm showToast)
+      alert("Đã lưu cấu hình hệ thống thành công!");
+      
+      // Cập nhật tiêu đề trạm ở Header nếu cần
+      const subTitle = document.getElementById('moduleSubtitle');
+      if(subTitle) subTitle.innerText = "Hệ thống đang chạy tại: " + settings.station;
+  };
+
+  window.resetSettings = function() {
+      if(confirm("Bạn có chắc muốn khôi phục cài đặt gốc?")) {
+          document.getElementById('confThreshold').value = 75;
+          document.getElementById('stationName').value = "CityVision Station";
+          document.getElementById('enableSound').checked = true;
+          saveSettings();
+      }
+  };
+  // Ép hệ thống nhận diện việc chuyển sang trang Settings
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-module="settings"]');
+    if (btn) {
+        // 1. Ẩn tất cả các module đang hiện
+        document.querySelectorAll('.module').forEach(m => m.hidden = true);
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('is-active'));
+
+        // 2. Hiện đúng module settings
+        const settingsModule = document.querySelector('[data-module-panel="settings"]');
+        if (settingsModule) {
+            settingsModule.hidden = false;
+            btn.classList.add('is-active');
+            
+            // Cập nhật tiêu đề trên thanh Topbar cho chuyên nghiệp
+            document.getElementById('moduleTitle').innerText = "Cấu hình hệ thống";
+            document.getElementById('moduleSubtitle').innerText = "Thiết lập các thông số vận hành AI và trạm kiểm soát";
+        }
+    }
+});
 })();

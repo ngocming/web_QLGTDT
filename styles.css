@@ -933,4 +933,55 @@ select:focus {
   .monitoring-stage {
     min-height: 220px;
   }
+  /* Chia màn hình Monitoring */
+  .monitoring-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* 70% video - 30% bảng */
+    gap: 20px;
+    align-items: start;
+  }
+
+  .scrollable-log {
+    max-height: 500px; /* Độ cao bằng cái video */
+    overflow-y: auto;
+  }
+
+  .table--compact td, .table--compact th {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+
+/* Hiệu ứng nháy xanh khi có biển số mới */
+  .new-detection {
+    background-color: #dcfce7 !important;
+    animation: fadeOut 2s forwards;
+  }
+
+  @keyframes fadeOut {
+    from { background-color: #dcfce7; }
+    to { background-color: transparent; }
+  }
+  /* Chức năng 1: Layout Monitoring */
+  .monitoring-container {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr; /* Chia 60% video - 40% bảng */
+    gap: 20px;
+    align-items: start;
+  }
+
+  .table--compact td {
+    padding: 12px 8px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  /* Hiệu ứng nháy khi có biển số mới */
+  .row-new-detection {
+    animation: highlightRow 2s ease-out;
+  }
+
+  @keyframes highlightRow {
+    0% { background-color: #dcfce7; }
+    100% { background-color: transparent; }
+  }
 }
