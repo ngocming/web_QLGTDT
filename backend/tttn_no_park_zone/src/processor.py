@@ -4,14 +4,14 @@ import base64
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
 import cv2
 import numpy as np
 import yaml
 
 from .detector import Detector
-from .logic import MOVING, PARKED, STOPPED, ViolationLogic
+from .logic import PARKED, STOPPED, ViolationLogic
 from .tracker import extract_tracks
 from .visualizer import draw_track, draw_violation_banner, draw_zone as draw_zone_overlay
 from .zones import load_zone_json
@@ -25,17 +25,18 @@ class ProcessorConfig:
     zone_file: Path
     conf: float
     iou: float
-    stop_seconds: float
-    move_thr_px: float
+    stop_speed_px_s: float
+    slow_speed_px_s: float
     cooldown_seconds: float
     reminder_seconds: float
     parked_seconds: float
+    reminder_limit_before_parked: int
     draw_zone: bool
 
 
 def load_processor_config(config_path: Path) -> ProcessorConfig:
     with config_path.open("r", encoding="utf-8") as file:
-      raw = yaml.safe_load(file)
+        raw = yaml.safe_load(file)
 
     root_dir = config_path.parent.parent
     return ProcessorConfig(
@@ -43,11 +44,12 @@ def load_processor_config(config_path: Path) -> ProcessorConfig:
         zone_file=(root_dir / raw["zone_file"]).resolve(),
         conf=float(raw["conf"]),
         iou=float(raw["iou"]),
-        stop_seconds=float(raw["stop_seconds"]),
-        move_thr_px=float(raw["move_thr_px"]),
+        stop_speed_px_s=float(raw.get("stop_speed_px_s", 5)),
+        slow_speed_px_s=float(raw.get("slow_speed_px_s", 25)),
         cooldown_seconds=float(raw["cooldown_seconds"]),
-        reminder_seconds=float(raw.get("reminder_seconds", 30)),
+        reminder_seconds=float(raw.get("reminder_seconds", 10)),
         parked_seconds=float(raw.get("parked_seconds", 60)),
+        reminder_limit_before_parked=int(raw.get("reminder_limit_before_parked", 5)),
         draw_zone=bool(raw.get("draw_zone", True)),
     )
 
@@ -72,13 +74,22 @@ def encode_frame(frame) -> str:
 
 def build_logic(cfg: ProcessorConfig, fps: float) -> ViolationLogic:
     return ViolationLogic(
-        cfg.stop_seconds,
-        cfg.move_thr_px,
+        cfg.stop_speed_px_s,
+        cfg.slow_speed_px_s,
         cfg.cooldown_seconds,
         fps=fps,
         reminder_seconds=cfg.reminder_seconds,
         parked_seconds=cfg.parked_seconds,
+        reminder_limit_before_parked=cfg.reminder_limit_before_parked,
     )
+
+
+def build_state_duration_label(vehicle_state: str, still_time: float) -> str:
+    if vehicle_state == STOPPED:
+        return f"DUNG: {still_time:.1f}s"
+    if vehicle_state == PARKED:
+        return f"DO: {still_time:.1f}s"
+    return ""
 
 
 class NoParkZoneEngine:
@@ -118,18 +129,26 @@ class NoParkZoneEngine:
             in_no_park = self.zone.contains_xy(center[0], center[1])
             still_time = self.logic.update(track_id, center, self.frame_index)
             vehicle_state = self.logic.get_vehicle_state(track_id)
+            vehicle_speed = self.logic.get_vehicle_speed(track_id)
+            reminder_count = self.logic.get_reminder_count(track_id)
+            duration_label = ""
 
-            label = f"ID:{track_id} {track['name']} {still_time:.1f}s"
             if in_no_park:
-                label += " | NO-PARK"
-
-            draw_track(annotated, xyxy, label, vehicle_state=vehicle_state)
+                label = f"ID:{track_id} {track['name']} {vehicle_speed:.1f}px/s | NO-PARK"
+                duration_label = build_state_duration_label(vehicle_state, still_time)
+                if duration_label:
+                    label += f" | {duration_label}"
+                draw_track(annotated, xyxy, label, vehicle_state=vehicle_state)
 
             event = "tracking"
             if self.logic.should_send_reminder(track_id, self.frame_index, in_no_park):
                 event = "reminder"
+                vehicle_state = self.logic.get_vehicle_state(track_id)
+                reminder_count = self.logic.get_reminder_count(track_id)
             if self.logic.should_flag_violation(track_id, self.frame_index, in_no_park):
                 event = "violation"
+                vehicle_state = self.logic.get_vehicle_state(track_id)
+                reminder_count = self.logic.get_reminder_count(track_id)
                 draw_violation_banner(annotated)
 
             detection = {
@@ -139,7 +158,11 @@ class NoParkZoneEngine:
                 "bbox": xyxy,
                 "center": list(center),
                 "in_no_park_zone": in_no_park,
+                "speed_px_s": round(vehicle_speed, 2),
                 "still_seconds": round(still_time, 2),
+                "reminder_count": reminder_count,
+                "reminder_limit_before_parked": self.cfg.reminder_limit_before_parked,
+                "state_duration_label": duration_label,
                 "state": vehicle_state,
                 "event": event,
             }

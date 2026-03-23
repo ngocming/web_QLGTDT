@@ -1,7 +1,7 @@
 import cv2
 import json
 
-VIDEO_OR_IMAGE = r"data/inputs/videos/parking_video1.mp4"  # hoặc ảnh .jpg/.png
+VIDEO_OR_IMAGE = r"data/inputs/videos/videoplayback.mp4"  # hoặc ảnh .jpg/.png
 OUT_JSON = r"configs/zones/school_gate_01.json"
 
 points = []
@@ -10,7 +10,7 @@ def on_mouse(event, x, y, flags, param):
     global points
     if event == cv2.EVENT_LBUTTONDOWN:
         points.append([x, y])
-        print("Add point:", [x, y])
+        print( [x, y])
 
 cap = cv2.VideoCapture(VIDEO_OR_IMAGE)
 ok, frame = cap.read()

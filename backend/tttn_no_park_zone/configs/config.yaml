@@ -1,19 +1,18 @@
-model_path: "weights/best.pt"     
-source: "data/inputs/videos/parking_video1.mp4"  
+model_path: "weights/best.pt"
+source: "data/inputs/videos/parking_video1.mp4"
 
 conf: 0.35
 iou: 0.5
 
-stop_seconds: 10
-move_thr_px: 2
+stop_speed_px_s: 5
+slow_speed_px_s: 25
 cooldown_seconds: 30
 
-# ── Thời gian nhắc nhở & coi là đỗ ────────────────────────────────────
-reminder_seconds: 30    # Gửi nhắc nhở mỗi 30 giây khi xe dừng
-parked_seconds: 60      # Coi là đỗ sau 60 giây dừng (vi phạm)
+reminder_seconds: 10
+parked_seconds: 50
+reminder_limit_before_parked: 5
 
 zone_file: "configs/zones/school_gate_01.json"
-
 
 save_violations: true
 save_violation_frames: true
