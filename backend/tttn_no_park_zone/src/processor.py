@@ -25,8 +25,9 @@ class ProcessorConfig:
     zone_file: Path
     conf: float
     iou: float
-    stop_speed_px_s: float
-    slow_speed_px_s: float
+    stop_displacement_px: float
+    slow_displacement_px: float
+    movement_window_seconds: float
     cooldown_seconds: float
     reminder_seconds: float
     parked_seconds: float
@@ -44,8 +45,9 @@ def load_processor_config(config_path: Path) -> ProcessorConfig:
         zone_file=(root_dir / raw["zone_file"]).resolve(),
         conf=float(raw["conf"]),
         iou=float(raw["iou"]),
-        stop_speed_px_s=float(raw.get("stop_speed_px_s", 5)),
-        slow_speed_px_s=float(raw.get("slow_speed_px_s", 25)),
+        stop_displacement_px=float(raw.get("stop_displacement_px", 6)),
+        slow_displacement_px=float(raw.get("slow_displacement_px", 20)),
+        movement_window_seconds=float(raw.get("movement_window_seconds", 2.0)),
         cooldown_seconds=float(raw["cooldown_seconds"]),
         reminder_seconds=float(raw.get("reminder_seconds", 10)),
         parked_seconds=float(raw.get("parked_seconds", 60)),
@@ -74,13 +76,14 @@ def encode_frame(frame) -> str:
 
 def build_logic(cfg: ProcessorConfig, fps: float) -> ViolationLogic:
     return ViolationLogic(
-        cfg.stop_speed_px_s,
-        cfg.slow_speed_px_s,
+        cfg.stop_displacement_px,
+        cfg.slow_displacement_px,
         cfg.cooldown_seconds,
         fps=fps,
         reminder_seconds=cfg.reminder_seconds,
         parked_seconds=cfg.parked_seconds,
         reminder_limit_before_parked=cfg.reminder_limit_before_parked,
+        movement_window_seconds=cfg.movement_window_seconds,
     )
 
 
@@ -129,12 +132,12 @@ class NoParkZoneEngine:
             in_no_park = self.zone.contains_xy(center[0], center[1])
             still_time = self.logic.update(track_id, center, self.frame_index)
             vehicle_state = self.logic.get_vehicle_state(track_id)
-            vehicle_speed = self.logic.get_vehicle_speed(track_id)
+            vehicle_motion = self.logic.get_vehicle_speed(track_id)
             reminder_count = self.logic.get_reminder_count(track_id)
             duration_label = ""
 
             if in_no_park:
-                label = f"ID:{track_id} {track['name']} {vehicle_speed:.1f}px/s | NO-PARK"
+                label = f"ID:{track_id} {track['name']} lech:{vehicle_motion:.1f}px | NO-PARK"
                 duration_label = build_state_duration_label(vehicle_state, still_time)
                 if duration_label:
                     label += f" | {duration_label}"
@@ -158,7 +161,7 @@ class NoParkZoneEngine:
                 "bbox": xyxy,
                 "center": list(center),
                 "in_no_park_zone": in_no_park,
-                "speed_px_s": round(vehicle_speed, 2),
+                "motion_px": round(vehicle_motion, 2),
                 "still_seconds": round(still_time, 2),
                 "reminder_count": reminder_count,
                 "reminder_limit_before_parked": self.cfg.reminder_limit_before_parked,

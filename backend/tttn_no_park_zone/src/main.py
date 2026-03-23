@@ -68,8 +68,9 @@ def main():
     source = cfg["source"]
     conf = float(cfg["conf"])
     iou = float(cfg["iou"])
-    stop_speed_px_s = float(cfg.get("stop_speed_px_s", 5))
-    slow_speed_px_s = float(cfg.get("slow_speed_px_s", 25))
+    stop_displacement_px = float(cfg.get("stop_displacement_px", 6))
+    slow_displacement_px = float(cfg.get("slow_displacement_px", 20))
+    movement_window_seconds = float(cfg.get("movement_window_seconds", 2.0))
     cooldown_seconds = float(cfg["cooldown_seconds"])
     reminder_seconds = float(cfg.get("reminder_seconds", 10))
     parked_seconds = float(cfg.get("parked_seconds", 60))
@@ -106,13 +107,14 @@ def main():
     zone = load_zone_json(zone_file)
     detector = Detector(model_path)
     logic = ViolationLogic(
-        stop_speed_px_s,
-        slow_speed_px_s,
+        stop_displacement_px,
+        slow_displacement_px,
         cooldown_seconds,
         fps=fps,
         reminder_seconds=reminder_seconds,
         parked_seconds=parked_seconds,
         reminder_limit_before_parked=reminder_limit_before_parked,
+        movement_window_seconds=movement_window_seconds,
     )
 
     so_frame = 0
@@ -143,11 +145,11 @@ def main():
             in_no_park = zone.contains_xy(center[0], center[1])
             still_time = logic.update(track_id, center, so_frame)
             veh_state = logic.get_vehicle_state(track_id)
-            veh_speed = logic.get_vehicle_speed(track_id)
+            veh_motion = logic.get_vehicle_speed(track_id)
             reminder_count = logic.get_reminder_count(track_id)
 
             if in_no_park:
-                label = f"ID:{track_id} {t['name']} {veh_speed:.1f}px/s | NO-PARK"
+                label = f"ID:{track_id} {t['name']} lech:{veh_motion:.1f}px | NO-PARK"
                 duration_label = build_state_duration_label(veh_state, still_time)
                 if duration_label:
                     label += f" | {duration_label}"
@@ -164,7 +166,7 @@ def main():
                     f"ID xe: {track_id}\n"
                     f"Loai xe: {t['name']}\n"
                     f"Lan nhac: {reminder_count}/{reminder_limit_before_parked}\n"
-                    f"Van toc: {veh_speed:.1f}px/s\n"
+                    f"Do lech trong cua so: {veh_motion:.1f}px\n"
                     f"Thoi gian dung: {still_time:.1f}s"
                 )
                 reminder_img_path = os.path.join("outputs", "violations", f"reminder_{track_id}_{now_ts()}.jpg")
@@ -192,7 +194,7 @@ def main():
                                 "VI PHAM: XE DO SAI QUY DINH\n"
                                 f"ID xe: {track_id}\n"
                                 f"Loai xe: {t['name']}\n"
-                                f"Van toc: {veh_speed:.1f}px/s\n"
+                                f"Do lech trong cua so: {veh_motion:.1f}px\n"
                                 f"Thoi gian do: {still_time:.1f}s"
                             )
                             send_telegram_image(

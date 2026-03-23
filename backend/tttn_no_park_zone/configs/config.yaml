@@ -4,8 +4,8 @@ source: "data/inputs/videos/parking_video1.mp4"
 conf: 0.35
 iou: 0.5
 
-stop_speed_px_s: 5
-slow_speed_px_s: 25
+stop_speed_px_s: 1.5
+slow_speed_px_s: 5.0
 cooldown_seconds: 30
 
 reminder_seconds: 10
