@@ -31,10 +31,10 @@ document.addEventListener("DOMContentLoaded", () => {
             tableBody.innerHTML = `
                 <tr>
                     <td colspan="5">
-                        <div class="empty-state">
+                        <div class="empty-state centered-panel">
                             <div>
-                                <h3>Chưa có người dùng nào</h3>
-                                <p class="muted">Tạo tài khoản đầu tiên để bắt đầu.</p>
+                                <h3 class="muted">Chưa có người dùng nào</h3>
+                                <p class="muted">Tạo tài khoản đầu tiên để bắt đầu quản trị hệ thống.</p>
                             </div>
                         </div>
                     </td>
@@ -47,12 +47,12 @@ document.addEventListener("DOMContentLoaded", () => {
             <tr>
                 <td><strong>${user.username}</strong></td>
                 <td>${user.full_name}</td>
-                <td><span class="pill ${user.role === "admin" ? "teal" : "gray"}">${user.role}</span></td>
-                <td><span class="badge ${user.is_active ? "success" : "muted"}">${user.is_active ? "Đang bật" : "Đang khóa"}</span></td>
+                <td><span class="pill ${user.role === "admin" ? "teal" : "gray"}">${user.role?.toUpperCase()}</span></td>
+                <td><span class="badge ${user.is_active ? "success" : "muted"}">${user.is_active ? "Hoạt động" : "Đang khóa"}</span></td>
                 <td>
-                    <div class="button-row">
+                    <div class="button-row" style="display: flex; gap: 8px;">
                         <button class="button secondary tiny" data-action="edit" data-id="${user.id}">Sửa</button>
-                        <button class="button danger tiny" data-action="delete" data-id="${user.id}">Xóa</button>
+                        <button class="button danger tiny" data-action="delete" data-id="${user.id}" style="background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2);">Xóa</button>
                     </div>
                 </td>
             </tr>

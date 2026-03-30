@@ -90,24 +90,37 @@ document.addEventListener("DOMContentLoaded", () => {
         const hasProgress = Number.isFinite(progress.processed_frames) || Number.isFinite(progress.progress_percent);
         const percentText = Number.isFinite(progress.progress_percent)
             ? `${progress.progress_percent.toFixed(1)}%`
-            : "Dang doi...";
+            : "Đang đợi...";
         const frameText = Number.isFinite(progress.processed_frames)
             ? `${progress.processed_frames}/${progress.source_total_frames || "?"} frame`
             : null;
         const queueText = job.status === "queued" && job.queue_position
-            ? `Vi tri trong hang doi: ${job.queue_position}`
+            ? `Vị trí trong hàng đợi: ${job.queue_position}`
             : null;
         const latestText = progress.latest_status || null;
 
         statusPanel.innerHTML = `
-            <article class="status-card">
-                <span class="pill ${badgeClass}">${job.status || "Khong ro"}</span>
-                <h4>${job.message || "Dang doi trang thai"}</h4>
-                <p class="muted">Job ID: ${job.id || "-"}</p>
-                ${queueText ? `<p class="muted">${queueText}</p>` : ""}
-                ${hasProgress ? `<p class="muted">Tien do: ${frameText ? `${frameText} - ` : ""}${percentText}</p>` : ""}
-                ${latestText ? `<p class="muted">Trang thai detect: ${latestText}</p>` : ""}
-                ${job.error ? `<p class="muted">${job.error}</p>` : ""}
+            <article class="status-card panel">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <span class="pill ${badgeClass}">${job.status?.toUpperCase() || "KHÔNG RÕ"}</span>
+                    <span class="muted small">Job ID: ${job.id?.substring(0, 8) || "-"}</span>
+                </div>
+                <h4 style="font-size: 1.2rem; margin-bottom: 8px;">${job.message || "Đang đợi trạng thái"}</h4>
+                
+                ${queueText ? `<div class="notice info" style="font-size: 0.9rem;">${queueText}</div>` : ""}
+                
+                <div class="progress-info" style="margin-top: 16px;">
+                    ${hasProgress ? `
+                        <p class="muted small" style="margin-bottom: 8px;">Tiến độ xử lý: <strong>${percentText}</strong></p>
+                        <div class="progress-bar-bg" style="height: 8px; background: var(--bg-accent); border-radius: 10px; overflow: hidden;">
+                            <div class="progress-bar-fill" style="height: 100%; background: var(--primary); width: ${progress.progress_percent || 0}%"></div>
+                        </div>
+                        <p class="muted tiny" style="margin-top: 8px;">${frameText ? `Đã xử lý: ${frameText}` : ""}</p>
+                    ` : ""}
+                </div>
+
+                ${latestText ? `<p class="muted small" style="margin-top: 12px; font-style: italic;">🔍 ${latestText}</p>` : ""}
+                ${job.error ? `<div class="notice error" style="margin-top: 12px;">${job.error}</div>` : ""}
             </article>
         `;
     }
@@ -115,39 +128,39 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderSummary(summary) {
         resultSummary.innerHTML = `
             <article class="summary-card">
-                <span>Frames da xu ly</span>
+                <span>Frames đã xử lý</span>
                 <strong>${summary.processed_frames ?? "-"}</strong>
             </article>
             <article class="summary-card">
-                <span>Thoi luong video</span>
+                <span>Thời lượng video</span>
                 <strong>${summary.duration_seconds ?? "-"}s</strong>
             </article>
             <article class="summary-card">
-                <span>FPS xu ly trung binh</span>
+                <span>FPS trung bình</span>
                 <strong>${summary.average_processing_fps ?? "-"}</strong>
             </article>
             <article class="summary-card">
-                <span>Mat do cao nhat</span>
+                <span>Mật độ cao nhất</span>
                 <strong>${summary.max_occupancy_percent ?? "-"}%</strong>
             </article>
             <article class="summary-card">
-                <span>Muc giao thong cao nhat</span>
+                <span>Giao thông cao nhất</span>
                 <strong>${summary.highest_traffic_level ?? "-"}</strong>
             </article>
             <article class="summary-card">
-                <span>Vi pham do xe</span>
+                <span>Vi phạm đỗ xe</span>
                 <strong>${summary.parking_violation_count ?? "-"}</strong>
             </article>
             <article class="summary-card">
-                <span>Xe lon nhat trong ROI</span>
+                <span>Xe lớn nhất</span>
                 <strong>${summary.max_vehicle_count ?? "-"}</strong>
             </article>
             <article class="summary-card">
-                <span>Bien so lon nhat</span>
+                <span>Biển số lớn nhất</span>
                 <strong>${summary.max_license_plate_count ?? "-"}</strong>
             </article>
-            <article class="summary-card">
-                <span>Trang thai cuoi</span>
+            <article class="summary-card summary-card-wide">
+                <span>Trạng thái cuối</span>
                 <strong>${summary.latest_status || "N/A"}</strong>
             </article>
         `;
