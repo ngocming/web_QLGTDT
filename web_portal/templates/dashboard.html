@@ -40,6 +40,24 @@
         <strong>YOLO26</strong>
         <p class="stat-sub">Trạng thái: Sẵn sàng</p>
     </article>
+    <article class="stat-card purple">
+        <span class="stat-icon">🚗</span>
+        <span class="stat-label">Xe Đi Qua</span>
+        <strong>{{ stats.total_vehicles }}</strong>
+        <p class="stat-sub">Tổng số xe được ghi nhận</p>
+    </article>
+    <article class="stat-card orange">
+        <span class="stat-icon">⛔</span>
+        <span class="stat-label">Đỗ Sai</span>
+        <strong>{{ stats.parking_violations|length }}</strong>
+        <p class="stat-sub">Xe chưa giải quyết vi phạm</p>
+    </article>
+    <article class="stat-card red">
+        <span class="stat-icon">🚦</span>
+        <span class="stat-label">Tắc Nghẽn</span>
+        <strong>{{ stats.congestion_count }}</strong>
+        <p class="stat-sub">Lần tắc nghẽn hôm nay</p>
+    </article>
 </section>
 
 <!-- Body -->
@@ -122,6 +140,59 @@
             <span class="empty-icon">📷</span>
             <p class="muted">Chưa có camera nào được cấu hình.</p>
             <a href="{{ url_for('cameras.cameras_page') }}" class="button secondary sm">Thêm Camera ngay</a>
+        </div>
+        {% endif %}
+    </article>
+</section>
+
+<!-- Illegal Parking Violations -->
+<section>
+    <article class="panel">
+        <div class="panel-header">
+            <div>
+                <p class="eyebrow">Cảnh báo Giao thông</p>
+                <h3>Xe Đỗ Sai - Chưa Giải Quyết</h3>
+            </div>
+            <a href="{{ url_for('cameras.cameras_page') }}" class="button secondary sm">Xem Tất Cả</a>
+        </div>
+
+        {% if stats.parking_violations %}
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; font-size: 0.9rem;">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <th style="text-align: left; padding: 12px; color: var(--text-muted);">Camera</th>
+                        <th style="text-align: left; padding: 12px; color: var(--text-muted);">Biển Số</th>
+                        <th style="text-align: left; padding: 12px; color: var(--text-muted);">Thời Gian</th>
+                        <th style="text-align: left; padding: 12px; color: var(--text-muted);">Thời Lượng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for violation in stats.parking_violations[:5] %}
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 12px;">
+                            <strong style="color: var(--text);">{{ violation.camera_name or 'N/A' }}</strong>
+                        </td>
+                        <td style="padding: 12px;">
+                            <code style="background: var(--bg-3); padding: 4px 8px; border-radius: 4px;">
+                                {{ violation.license_plate or 'Chưa nhận diện' }}
+                            </code>
+                        </td>
+                        <td style="padding: 12px; color: var(--text-muted);">
+                            {{ (violation.violation_time or '')[:19] }}
+                        </td>
+                        <td style="padding: 12px;">
+                            <span class="pill warning">{{ (violation.duration_seconds or 0) // 60 }} phút</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <span class="empty-icon">✅</span>
+            <p class="muted">Không có vi phạm đỗ xe nào cần xử lý.</p>
         </div>
         {% endif %}
     </article>

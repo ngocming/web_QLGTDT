@@ -43,6 +43,39 @@ def init_db() -> None:
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             );
+
+            CREATE TABLE IF NOT EXISTS traffic_stats (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                camera_id INTEGER NOT NULL,
+                vehicle_count INTEGER NOT NULL DEFAULT 0,
+                recorded_date TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (camera_id) REFERENCES cameras(id),
+                UNIQUE(camera_id, recorded_date)
+            );
+
+            CREATE TABLE IF NOT EXISTS parking_violations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                camera_id INTEGER NOT NULL,
+                license_plate TEXT,
+                violation_time TEXT NOT NULL,
+                duration_seconds INTEGER NOT NULL DEFAULT 0,
+                frame_path TEXT,
+                is_resolved INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (camera_id) REFERENCES cameras(id)
+            );
+
+            CREATE TABLE IF NOT EXISTS congestion_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                camera_id INTEGER NOT NULL,
+                congestion_level INTEGER NOT NULL DEFAULT 1,
+                start_time TEXT NOT NULL,
+                end_time TEXT,
+                duration_seconds INTEGER DEFAULT 0,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (camera_id) REFERENCES cameras(id)
+            );
             """
         )
 
@@ -69,3 +102,103 @@ def init_db() -> None:
             ),
         )
         connection.commit()
+
+
+def get_total_vehicle_count() -> int:
+    """Lấy tổng số xe đi qua"""
+    with connect() as connection:
+        row = connection.execute(
+            "SELECT SUM(vehicle_count) as total FROM traffic_stats"
+        ).fetchone()
+    return int(row["total"]) if row["total"] else 0
+
+
+def get_illegal_parking_violations() -> list:
+    """Lấy danh sách xe đỗ sai (chưa giải quyết)"""
+    with connect() as connection:
+        rows = connection.execute(
+            """
+            SELECT pv.*, c.name as camera_name
+            FROM parking_violations pv
+            LEFT JOIN cameras c ON pv.camera_id = c.id
+            WHERE pv.is_resolved = 0
+            ORDER BY pv.violation_time DESC
+            LIMIT 10
+            """
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def get_congestion_count() -> int:
+    """Lấy số lần tắc nghẽn trong hôm nay"""
+    from datetime import datetime
+    today = datetime.now().strftime("%Y-%m-%d")
+    with connect() as connection:
+        row = connection.execute(
+            """
+            SELECT COUNT(*) as total FROM congestion_logs
+            WHERE DATE(start_time) = ?
+            """,
+            (today,)
+        ).fetchone()
+    return int(row["total"]) if row["total"] else 0
+
+
+def log_vehicle_count(camera_id: int, count: int, recorded_date: str = None) -> None:
+    """Ghi lại số xe đi qua"""
+    from datetime import datetime
+    if recorded_date is None:
+        recorded_date = datetime.now().strftime("%Y-%m-%d")
+    
+    with connect() as connection:
+        connection.execute(
+            """
+            INSERT OR REPLACE INTO traffic_stats (camera_id, vehicle_count, recorded_date)
+            VALUES (?, ?, ?)
+            """,
+            (camera_id, count, recorded_date)
+        )
+        connection.commit()
+
+
+def log_parking_violation(camera_id: int, license_plate: str = None, violation_time: str = None, duration: int = 0, frame_path: str = None) -> None:
+    """Ghi lại vi phạm đỗ xe"""
+    from datetime import datetime
+    if violation_time is None:
+        violation_time = datetime.now().isoformat()
+    
+    with connect() as connection:
+        connection.execute(
+            """
+            INSERT INTO parking_violations (camera_id, license_plate, violation_time, duration_seconds, frame_path)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (camera_id, license_plate, violation_time, duration, frame_path)
+        )
+        connection.commit()
+
+
+def log_congestion(camera_id: int, level: int = 1, start_time: str = None) -> None:
+    """Ghi lại sự kiện tắc nghẽn"""
+    from datetime import datetime
+    if start_time is None:
+        start_time = datetime.now().isoformat()
+    
+    with connect() as connection:
+        connection.execute(
+            """
+            INSERT INTO congestion_logs (camera_id, congestion_level, start_time)
+            VALUES (?, ?, ?)
+            """,
+            (camera_id, level, start_time)
+        )
+        connection.commit()
+
+
+def get_dashboard_stats_data() -> dict:
+    """Lấy tất cả dữ liệu thống kê cho dashboard"""
+    return {
+        "total_vehicles": get_total_vehicle_count(),
+        "illegal_parking_violations": get_illegal_parking_violations(),
+        "congestion_count": get_congestion_count(),
+    }
