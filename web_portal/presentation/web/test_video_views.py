@@ -187,8 +187,8 @@ async def api_create_test_job(
     )
 
     payload = job.to_dict()
-    payload["input_video_url"] = request.url_for("test_video.serve_test_job_source", job_id=job.id)
-    payload["preview_image_url"] = request.url_for("test_video.serve_test_job_preview", job_id=job.id)
+    payload["input_video_url"] = str(request.url_for("test_video.serve_test_job_source", job_id=job.id))
+    payload["preview_image_url"] = str(request.url_for("test_video.serve_test_job_preview", job_id=job.id))
     payload["queue_position"] = container.job_use_cases.get_queue_position(job.id)
 
     return JSONResponse(status_code=202, content={"ok": True, "job": payload})
