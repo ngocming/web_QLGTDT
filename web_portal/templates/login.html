@@ -52,7 +52,7 @@
         </div>
         {% endif %}
 
-        <form method="post" action="{{ url_for('login') }}" style="display: grid; gap: 18px;">
+        <form method="post" action="{{ url_for('auth.login_page') }}" style="display: grid; gap: 18px;">
             <label class="field">
                 <span>Tên đăng nhập</span>
                 <input id="login-username" type="text" name="username" placeholder="Nhập tên đăng nhập..." required

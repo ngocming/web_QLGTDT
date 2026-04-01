@@ -38,22 +38,22 @@
 
             <nav class="nav-links" aria-label="Điều hướng chính">
                 <span class="nav-label">Tổng quan</span>
-                <a id="nav-dashboard" class="nav-link {% if page == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                <a id="nav-dashboard" class="nav-link {% if page == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard.dashboard_page') }}">
                     <span class="nav-icon">📊</span> Bảng điều khiển
                 </a>
 
                 <span class="nav-label" style="margin-top: 8px;">Quản lý</span>
                 {% if current_user.role == 'admin' %}
-                <a id="nav-users" class="nav-link {% if page == 'users' %}active{% endif %}" href="{{ url_for('users_page') }}">
+                <a id="nav-users" class="nav-link {% if page == 'users' %}active{% endif %}" href="{{ url_for('users.users_page') }}">
                     <span class="nav-icon">👥</span> Người dùng
                 </a>
                 {% endif %}
-                <a id="nav-cameras" class="nav-link {% if page == 'cameras' %}active{% endif %}" href="{{ url_for('cameras_page') }}">
+                <a id="nav-cameras" class="nav-link {% if page == 'cameras' %}active{% endif %}" href="{{ url_for('cameras.cameras_page') }}">
                     <span class="nav-icon">📷</span> Camera
                 </a>
 
                 <span class="nav-label" style="margin-top: 8px;">Phân tích</span>
-                <a id="nav-test-video" class="nav-link {% if page == 'test-video' %}active{% endif %}" href="{{ url_for('test_video_page') }}">
+                <a id="nav-test-video" class="nav-link {% if page == 'test-video' %}active{% endif %}" href="{{ url_for('test_video.test_video_page') }}">
                     <span class="nav-icon">📹</span> Kiểm tra Video
                 </a>
             </nav>
@@ -68,7 +68,7 @@
                         <p class="role-badge">{{ current_user.role }}</p>
                     </div>
                 </div>
-                <form method="post" action="{{ url_for('logout') }}">
+                <form method="post" action="{{ url_for('auth.logout') }}">
                     <button type="submit" id="btn-logout" class="button secondary full-width sm">
                         <span>🚪</span> Đăng xuất
                     </button>

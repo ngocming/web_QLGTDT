@@ -492,3 +492,16 @@ def process_video(
         },
         "violation_events": violation_events[:20],
     }
+
+from application.interfaces.detection_interface import DetectionInterface
+
+class YoloDetectionService(DetectionInterface):
+    def process_video(
+        self,
+        input_path: str,
+        output_path: str,
+        settings: Dict[str, Any],
+        progress_callback: Callable[[Dict[str, Any]], None],
+    ) -> Dict[str, Any]:
+        return process_video(input_path, output_path, settings, progress_callback)
+

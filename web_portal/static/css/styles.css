@@ -5,19 +5,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap');
 
 :root {
-    /* Dark Base */
-    --bg:           #0d1117;
-    --bg-2:         #161b22;
-    --bg-3:         #1c2230;
-    --surface:      rgba(255,255,255,0.04);
-    --surface-hover:rgba(255,255,255,0.07);
-    --border:       rgba(255,255,255,0.08);
-    --border-bright:rgba(255,255,255,0.14);
+    /* Light Base (Xanh Trắng) */
+    --bg:           #f4f7fb;  /* Blue-tinted white */
+    --bg-2:         #ffffff;  /* Pure white */
+    --bg-3:         #e2e8f0;  /* Light slate */
+    --surface:      rgba(0,0,0,0.03);
+    --surface-hover:rgba(0,0,0,0.06);
+    --border:       rgba(0,0,0,0.08);
+    --border-bright:rgba(0,0,0,0.15);
 
     /* Text */
-    --text:         #e6edf3;
-    --text-muted:   #8b949e;
-    --text-subtle:  #484f58;
+    --text:         #0f172a;  /* Very dark slate */
+    --text-muted:   #475569;
+    --text-subtle:  #64748b;
 
     /* Brand Gradient */
     --primary:      #7c3aed;  /* Violet */
@@ -110,7 +110,7 @@ img, video { display: block; max-width: 100%; }
 .sidebar {
     width: var(--sidebar-w);
     flex-shrink: 0;
-    background: rgba(22, 27, 34, 0.95);
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(24px);
     border-right: 1px solid var(--border);
     display: flex;
@@ -268,7 +268,7 @@ img, video { display: block; max-width: 100%; }
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(13, 17, 23, 0.85);
+    background: rgba(244, 247, 251, 0.85);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
     padding: 0 40px;

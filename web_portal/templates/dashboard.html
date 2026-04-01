@@ -10,7 +10,7 @@
         <p class="muted">Theo dõi trạng thái hệ thống, lưu lượng giao thông và quản lý các điểm giám sát AI.</p>
     </div>
     <div class="header-actions">
-        <a class="button primary" href="{{ url_for('test_video_page') }}">⚡ Chạy Phân tích</a>
+        <a class="button primary" href="{{ url_for('test_video.test_video_page') }}">⚡ Chạy Phân tích</a>
     </div>
 </div>
 
@@ -54,7 +54,7 @@
         </div>
         <div style="display: grid; gap: 14px;">
             {% if current_user.role == 'admin' %}
-            <a class="panel" href="{{ url_for('users_page') }}"
+            <a class="panel" href="{{ url_for('users.users_page') }}"
                 style="display: block; padding: 18px 20px; text-decoration: none; border-radius: var(--r-lg);">
                 <strong
                     style="display: flex; align-items: center; gap: 10px; font-size: 1rem; margin-bottom: 4px; color: var(--text);">
@@ -63,7 +63,7 @@
                 <p class="muted small">Cấp quyền, tạo mới hoặc khóa tài khoản vận hành.</p>
             </a>
             {% endif %}
-            <a class="panel" href="{{ url_for('cameras_page') }}"
+            <a class="panel" href="{{ url_for('cameras.cameras_page') }}"
                 style="display: block; padding: 18px 20px; text-decoration: none; border-radius: var(--r-lg);">
                 <strong
                     style="display: flex; align-items: center; gap: 10px; font-size: 1rem; margin-bottom: 4px; color: var(--text);">
@@ -71,7 +71,7 @@
                 </strong>
                 <p class="muted small">Thiết lập nguồn RTSP, ROI và các vùng cảnh báo.</p>
             </a>
-            <a class="panel" href="{{ url_for('test_video_page') }}"
+            <a class="panel" href="{{ url_for('test_video.test_video_page') }}"
                 style="display: block; padding: 18px 20px; text-decoration: none; border-radius: var(--r-lg);">
                 <strong
                     style="display: flex; align-items: center; gap: 10px; font-size: 1rem; margin-bottom: 4px; color: var(--text);">
@@ -89,7 +89,7 @@
                 <p class="eyebrow">Cập nhật Gần đây</p>
                 <h3>Điểm giám sát Mới nhất</h3>
             </div>
-            <a href="{{ url_for('cameras_page') }}" class="button secondary sm">Xem tất cả</a>
+            <a href="{{ url_for('cameras.cameras_page') }}" class="button secondary sm">Xem tất cả</a>
         </div>
 
         {% if stats.recent_cameras %}
@@ -121,7 +121,7 @@
         <div class="empty-state">
             <span class="empty-icon">📷</span>
             <p class="muted">Chưa có camera nào được cấu hình.</p>
-            <a href="{{ url_for('cameras_page') }}" class="button secondary sm">Thêm Camera ngay</a>
+            <a href="{{ url_for('cameras.cameras_page') }}" class="button secondary sm">Thêm Camera ngay</a>
         </div>
         {% endif %}
     </article>
