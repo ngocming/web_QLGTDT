@@ -16,90 +16,54 @@
 
 <!-- Stats -->
 <section class="stats-grid">
-    <article class="stat-card">
+    {% if current_user.role == 'admin' %}
+    <a href="{{ url_for('users.users_page') }}" class="stat-card" style="text-decoration: none; cursor: pointer; color: inherit;">
         <span class="stat-icon">👥</span>
         <span class="stat-label">Người dùng</span>
         <strong>{{ stats.user_count }}</strong>
         <p class="stat-sub">Tài khoản trong hệ thống</p>
-    </article>
-    <article class="stat-card cyan">
+    </a>
+    {% endif %}
+    <a href="{{ url_for('cameras.cameras_page') }}" class="stat-card cyan" style="text-decoration: none; cursor: pointer; color: inherit;">
         <span class="stat-icon">📷</span>
         <span class="stat-label">Tổng Camera</span>
         <strong>{{ stats.camera_count }}</strong>
         <p class="stat-sub">Điểm giám sát khai báo</p>
-    </article>
-    <article class="stat-card green">
+    </a>
+    <a href="{{ url_for('cameras.cameras_page') }}" class="stat-card green" style="text-decoration: none; cursor: pointer; color: inherit;">
         <span class="stat-icon">🟢</span>
         <span class="stat-label">Đang Hoạt động</span>
         <strong>{{ stats.active_cameras }}</strong>
         <p class="stat-sub">Camera sẵn sàng xử lý</p>
-    </article>
-    <article class="stat-card pink">
+    </a>
+    <article class="stat-card pink" style="cursor: default;">
         <span class="stat-icon">🤖</span>
         <span class="stat-label">Model AI</span>
         <strong>YOLO26</strong>
         <p class="stat-sub">Trạng thái: Sẵn sàng</p>
     </article>
-    <article class="stat-card purple">
+    <a href="{{ url_for('test_video.test_video_page') }}" class="stat-card purple" style="text-decoration: none; cursor: pointer; color: inherit;">
         <span class="stat-icon">🚗</span>
         <span class="stat-label">Xe Đi Qua</span>
         <strong>{{ stats.total_vehicles }}</strong>
         <p class="stat-sub">Tổng số xe được ghi nhận</p>
-    </article>
-    <article class="stat-card orange">
+    </a>
+    <a href="{{ url_for('test_video.test_video_page') }}" class="stat-card orange" style="text-decoration: none; cursor: pointer; color: inherit;">
         <span class="stat-icon">⛔</span>
         <span class="stat-label">Đỗ Sai</span>
         <strong>{{ stats.parking_violations|length }}</strong>
         <p class="stat-sub">Xe chưa giải quyết vi phạm</p>
-    </article>
-    <article class="stat-card red">
+    </a>
+    <a href="{{ url_for('test_video.test_video_page') }}" class="stat-card red" style="text-decoration: none; cursor: pointer; color: inherit;">
         <span class="stat-icon">🚦</span>
         <span class="stat-label">Tắc Nghẽn</span>
         <strong>{{ stats.congestion_count }}</strong>
         <p class="stat-sub">Lần tắc nghẽn hôm nay</p>
-    </article>
+    </a>
 </section>
 
 <!-- Body -->
-<section class="split-layout two-columns">
-    <!-- Quick Actions -->
-    <article class="panel">
-        <div class="panel-header">
-            <div>
-                <p class="eyebrow">Điều hướng</p>
-                <h3>Thao tác Nhanh</h3>
-            </div>
-        </div>
-        <div style="display: grid; gap: 14px;">
-            {% if current_user.role == 'admin' %}
-            <a class="panel" href="{{ url_for('users.users_page') }}"
-                style="display: block; padding: 18px 20px; text-decoration: none; border-radius: var(--r-lg);">
-                <strong
-                    style="display: flex; align-items: center; gap: 10px; font-size: 1rem; margin-bottom: 4px; color: var(--text);">
-                    <span>👥</span> Quản lý Người dùng
-                </strong>
-                <p class="muted small">Cấp quyền, tạo mới hoặc khóa tài khoản vận hành.</p>
-            </a>
-            {% endif %}
-            <a class="panel" href="{{ url_for('cameras.cameras_page') }}"
-                style="display: block; padding: 18px 20px; text-decoration: none; border-radius: var(--r-lg);">
-                <strong
-                    style="display: flex; align-items: center; gap: 10px; font-size: 1rem; margin-bottom: 4px; color: var(--text);">
-                    <span>📷</span> Cấu hình Camera
-                </strong>
-                <p class="muted small">Thiết lập nguồn RTSP, ROI và các vùng cảnh báo.</p>
-            </a>
-            <a class="panel" href="{{ url_for('test_video.test_video_page') }}"
-                style="display: block; padding: 18px 20px; text-decoration: none; border-radius: var(--r-lg);">
-                <strong
-                    style="display: flex; align-items: center; gap: 10px; font-size: 1rem; margin-bottom: 4px; color: var(--text);">
-                    <span>📹</span> Phân tích Video
-                </strong>
-                <p class="muted small">Tải lên dữ liệu mẫu để kiểm tra độ chính xác của AI.</p>
-            </a>
-        </div>
-    </article>
-
+<section>
     <!-- Recent Cameras -->
     <article class="panel">
         <div class="panel-header">
